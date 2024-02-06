@@ -2,9 +2,12 @@ import { Form, Formik } from "formik";
 import React, { useState } from "react";
 import FormNavigation from "./FormNavigation";
 import { Step, StepLabel, Stepper } from "@mui/material";
+import SuccessComponent from "./SuccessComponent"; // Import your success component
 
 const MultiStepForm = ({ children, initialValues, onSubmit }) => {
   const [stepNumber, setStepNumber] = useState(0);
+  const [isFormSubmitted, setIsFormSubmitted] = useState(false);
+  const [completedSteps, setCompletedSteps] = useState({});
   const steps = React.Children.toArray(children);
 
   const [snapshot, setSnapshot] = useState(initialValues);
@@ -16,7 +19,9 @@ const MultiStepForm = ({ children, initialValues, onSubmit }) => {
   const next = (values) => {
     setSnapshot(values);
     setStepNumber(stepNumber + 1);
+    setCompletedSteps({ ...completedSteps, [step.props.stepName]: true });
   };
+
   const previous = (values) => {
     setSnapshot(values);
     setStepNumber(stepNumber - 1);
@@ -28,7 +33,8 @@ const MultiStepForm = ({ children, initialValues, onSubmit }) => {
     }
 
     if (isLastStep) {
-      return onSubmit(values, actions);
+      await onSubmit(values, actions);
+      setIsFormSubmitted(true);
     } else {
       actions.setTouched({});
       next(values);
@@ -44,24 +50,31 @@ const MultiStepForm = ({ children, initialValues, onSubmit }) => {
       >
         {(formik) => (
           <Form>
+            <Stepper activeStep={stepNumber} style={{ marginBottom: 30 }}>
+              {steps.map((currentStep, index) => {
+                const label = currentStep.props.stepName;
+                const isStepCompleted = completedSteps[label];
 
-            <Stepper activeStep={stepNumber} style={{marginBottom: 30}}>
-                {steps.map(currentStep => {
-                    const label = currentStep.props.stepName;
-
-                    return <Step key={label}>
-                            <StepLabel>{label}</StepLabel>
-                    </Step>
-                })}
+                return (
+                  <Step key={label} completed={isStepCompleted}>
+                    <StepLabel>{label}</StepLabel>
+                  </Step>
+                );
+              })}
             </Stepper>
 
-            {step}
-
-            <FormNavigation
-              isLastStep={isLastStep}
-              hasPrevious={stepNumber > 0}
-              onBackClick={() => previous(formik.values)}
-            />
+            {isFormSubmitted ? (
+              <SuccessComponent />
+            ) : (
+              <>
+                {step}
+                <FormNavigation
+                  isLastStep={isLastStep}
+                  hasPrevious={stepNumber > 0}
+                  onBackClick={() => previous(formik.values)}
+                />
+              </>
+            )}
           </Form>
         )}
       </Formik>

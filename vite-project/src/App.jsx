@@ -5,13 +5,16 @@ import "./App.css";
 import InputField from "./InputField";
 import MultiStepForm, { FormStep } from "./MultiStepForm";
 
-const validationSchema = yup.object({
-  name: yup.string().required("Name is required!"),
-  email: yup
-    .string()
-    .email("Plase enter correct email!")
-    .required("Email is required!"),
-});
+const validationSchemas = {
+  Person: yup.object({
+    name: yup.string().required("Name is required!"),
+    email: yup.string().email("Please enter a correct email!").required("Email is required!"),
+  }),
+  Address: yup.object({
+    street: yup.string().required("Street is required!"),
+    country: yup.string().required("Country is required!"),
+  }),
+};
 
 function App() {
   return (
@@ -29,7 +32,7 @@ function App() {
       <FormStep
         stepName="Person"
         onSubmit={() => console.log("Step One")}
-        validationSchema={validationSchema}
+        validationSchema={validationSchemas.Person}
       >
         <InputField variant="standard" name="name" label="Name" />
         <InputField variant="standard" name="email" label="Email" />
@@ -38,10 +41,7 @@ function App() {
       <FormStep
         stepName="Address"
         onSubmit={() => console.log("Step Two")}
-        validationSchema={yup.object({
-          street: yup.string().required("street is required!"),
-          country: yup.string().required("Email is required!"),
-        })}
+        validationSchema={validationSchemas.Address}
       >
         <InputField variant="standard" name="street" label="Street" />
         <InputField variant="standard" name="country" label="Country" />
