@@ -67,7 +67,7 @@ const MultiStepForm = ({ children, initialValues, onSubmit }) => {
               <SuccessComponent />
             ) : (
               <>
-                {step}
+                {React.cloneElement(step, { ...formik })}
                 <FormNavigation
                   isLastStep={isLastStep}
                   hasPrevious={stepNumber > 0}
@@ -84,4 +84,4 @@ const MultiStepForm = ({ children, initialValues, onSubmit }) => {
 
 export default MultiStepForm;
 
-export const FormStep = ({ stepName = "", children }) => children;
+export const FormStep = ({ stepName = "", children }) =>{ return <>{children}</>};

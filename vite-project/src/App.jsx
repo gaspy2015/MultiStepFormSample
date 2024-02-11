@@ -1,10 +1,11 @@
 import { FieldArray, Formik } from "formik";
 import { TextField, Button, IconButton } from "@mui/material";
-import { DataGrid } from '@mui/x-data-grid';
+import { DataGrid, GridDeleteIcon } from '@mui/x-data-grid';
 import * as yup from "yup";
 import "./App.css";
 import InputField from "./InputField";
 import MultiStepForm, { FormStep } from "./MultiStepForm";
+import { useState } from "react";
 
 const validationSchemas = {
   Person: yup.object({
@@ -17,25 +18,57 @@ const validationSchemas = {
   }),
 };
 
+// Define the initial values for your form fields
+const initialValues = {
+  name: '',
+  email: '',
+  street: '',
+  country: '',
+  donations: [{ id: Math.random(), donationName: '', amount: 0 }],
+};
+
+const EMPTY_ROW = { id: Math.random(), donationName: '', amount: 0 };
+
 function App() {
 
   const columns = [
     { field: "id", headerName: "ID", width: 100 },
     {field: "donationName", headerName: "Donation", width: 150, editable: true },
-    // {
-    //   field: "action",
-    //   headerName: "Action",
-    //   width: 100,
-    //   renderCell: (params) => (
-    //     <IconButton onClick={() => deleteRow(params.rowIndex)}>
-    //       <GridDeleteIcon />
-    //     </IconButton>
-    //   ),
-    // },
+    {field: "amount", headerName: "Amount", width: 150, editable: true },
+    {
+      field: "action",
+      headerName: "Action",
+      width: 100,
+      renderCell: (params) => (
+        <IconButton onClick={() => deleteRow(params.rowIndex)}>
+          <GridDeleteIcon />
+        </IconButton>
+      ),
+    },
     
     
   ];
 
+  const [rows, setRows] = useState(initialValues.donations); // Manage rows with useState
+
+  // Function to delete a row
+  const deleteRow = (index) => {
+    const updatedRows = [...rows];
+    updatedRows.splice(index, 1);
+    setRows(updatedRows);
+  };
+
+  // Function to add a row
+  const addRow = () => {
+    setRows([...rows, EMPTY_ROW]);
+  };
+
+  // Update rows when cell is edited
+  const handleCellEditCommit = (params) => {
+    const { id, field, value } = params;
+    const updatedRows = rows.map((row) => (row.id === id ? { ...row, [field]: value } : row));
+    setRows(updatedRows);
+  };
 
   return (
     <MultiStepForm
@@ -74,32 +107,29 @@ function App() {
       <FormStep
         stepName="Data Table"
         onSubmit={() => console.log("Step Three")}
-        validationSchema={validationSchemas.Person}
+        //validationSchema={validationSchemas.Person}
       >
+        
+
         <FieldArray name="details">
                 {({ insert, remove, push }) => (
                   <div>
                     <DataGrid
-                      rows={values.donations}
+                      rows={initialValues.donations}
                       columns={columns}
                       pageSize={5}
                       rowsPerPageOptions={[5]}
                       disableSelectionOnClick
                       autoHeight
-                      onCellEditCommit={(params) => {
-                        const { id, field, value } = params;
-                        const updatedRows = values.donations.map((row) =>
-                          row.id === id ? { ...row, [field]: value } : row
-                        );
-                        setFieldValue("details", updatedRows);
-                      }}
+                      onCellEditCommit={handleCellEditCommit}
                     />
-                    <IconButton onClick={() => push(EMPTY_ROW)}>
+                    <IconButton onClick={() => addRow()}>
                       Add Row
                     </IconButton>
                   </div>
                 )}
               </FieldArray>
+              
       </FormStep>
     </MultiStepForm>
   );
