@@ -1,4 +1,4 @@
-import { FieldArray, Formik } from "formik";
+import { FieldArray, Formik, useFormikContext } from "formik";
 import { TextField, Button, IconButton } from "@mui/material";
 import { DataGrid, GridDeleteIcon } from '@mui/x-data-grid';
 import * as yup from "yup";
@@ -27,61 +27,66 @@ const initialValues = {
   donations: [{ id: Math.random(), donationName: '', amount: 0 }],
 };
 
-const EMPTY_ROW = { id: Math.random(), donationName: '', amount: 0 };
+const DonationsFieldArray = () => {
+  const { values, setFieldValue } = useFormikContext();
 
-function App() {
+  const handleAddRow = () => {
+    const rowId = Math.random();
+    const newDonations = [...values.donations, { id: rowId, donationName: '', amount: 0 }];
+    setFieldValue('donations', newDonations);
+  };
+
+  const handleDeleteRow = (id) => {
+    const newDonations = values.donations.filter(donation => donation.id !== id);
+    setFieldValue('donations', newDonations);
+  };
+
+  const handleEditCellChangeCommitted = ({ id, field, props }) => {
+    const newDonations = values.donations.map((donation) =>
+      donation.id === id ? { ...donation, [field]: props.value } : donation
+    );
+    setFieldValue('donations', newDonations);
+  };
 
   const columns = [
-    { field: "id", headerName: "ID", width: 100 },
-    {field: "donationName", headerName: "Donation", width: 150, editable: true },
-    {field: "amount", headerName: "Amount", width: 150, editable: true },
+    { field: 'donationName', headerName: 'Donation Name', width: 200, editable: true },
+    { field: 'amount', headerName: 'Amount', type: 'number', width: 200, editable: true },
     {
-      field: "action",
-      headerName: "Action",
-      width: 100,
+      field: 'actions',
+      headerName: 'Actions',
+      width: 150,
       renderCell: (params) => (
-        <IconButton onClick={() => deleteRow(params.rowIndex)}>
+        <IconButton onClick={() => handleDeleteRow(params.id)}>
           <GridDeleteIcon />
         </IconButton>
       ),
     },
-    
-    
   ];
 
-  const [rows, setRows] = useState(initialValues.donations); // Manage rows with useState
+  return (
+    <>
+      <Button onClick={handleAddRow} variant="contained" color="primary">
+        Add Donation
+      </Button>
+      <div style={{ height: 400, width: '100%' }}>
+        <DataGrid
+          rows={values.donations}
+          columns={columns}
+          pageSize={5}
+          onCellEditCommit={handleEditCellChangeCommitted}
+        />
+      </div>
+    </>
+  );
+};
 
-  // Function to delete a row
-  const deleteRow = (index) => {
-    const updatedRows = [...rows];
-    updatedRows.splice(index, 1);
-    setRows(updatedRows);
-  };
 
-  // Function to add a row
-  const addRow = () => {
-    setRows([...rows, EMPTY_ROW]);
-  };
-
-  // Update rows when cell is edited
-  const handleCellEditCommit = (params) => {
-    const { id, field, value } = params;
-    const updatedRows = rows.map((row) => (row.id === id ? { ...row, [field]: value } : row));
-    setRows(updatedRows);
-  };
+function App() {
 
   return (
+    
     <MultiStepForm
-      initialValues={{
-        name: "",
-        email: "",
-        street: "",
-        country: "",
-        donations: [{
-          donationName: "",
-          amount: 0,
-        }],
-      }}
+      initialValues={initialValues}
       onSubmit={(values) => {
         alert(JSON.stringify(values, null, 2));
       }}
@@ -111,28 +116,13 @@ function App() {
       >
         
 
-        <FieldArray name="details">
-                {({ insert, remove, push }) => (
-                  <div>
-                    <DataGrid
-                      rows={initialValues.donations}
-                      columns={columns}
-                      pageSize={5}
-                      rowsPerPageOptions={[5]}
-                      disableSelectionOnClick
-                      autoHeight
-                      onCellEditCommit={handleCellEditCommit}
-                    />
-                    <IconButton onClick={() => addRow()}>
-                      Add Row
-                    </IconButton>
-                  </div>
-                )}
-              </FieldArray>
+        <FieldArray name="donations" component={DonationsFieldArray} />
               
       </FormStep>
     </MultiStepForm>
+    
   );
+  
 }
 
 export default App;

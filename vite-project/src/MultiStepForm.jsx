@@ -31,15 +31,18 @@ const MultiStepForm = ({ children, initialValues, onSubmit }) => {
     if (step.props.onSubmit) {
       await step.props.onSubmit(values);
     }
-
+  
     if (isLastStep) {
-      await onSubmit(values, actions);
+      // Include the donations data in the form submission
+      const formData = { ...values, donations: values.donations };
+      await onSubmit(formData, actions);
       setIsFormSubmitted(true);
     } else {
       actions.setTouched({});
       next(values);
     }
   };
+  
 
   return (
     <div>
