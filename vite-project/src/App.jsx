@@ -5,7 +5,7 @@ import * as yup from "yup";
 import "./App.css";
 import InputField from "./InputField";
 import MultiStepForm, { FormStep } from "./MultiStepForm";
-import { useState } from "react";
+import React, { useState } from "react";
 
 const validationSchemas = {
   Person: yup.object({
@@ -31,7 +31,7 @@ const DonationsFieldArray = () => {
   const { values, setFieldValue } = useFormikContext();
 
   const handleAddRow = () => {
-    const rowId = Math.random();
+    const rowId = Math.random().toString(); // Convert to string for consistency
     const newDonations = [...values.donations, { id: rowId, donationName: '', amount: 0 }];
     setFieldValue('donations', newDonations);
   };
@@ -41,12 +41,19 @@ const DonationsFieldArray = () => {
     setFieldValue('donations', newDonations);
   };
 
-  const handleEditCellChangeCommitted = ({ id, field, props }) => {
-    const newDonations = values.donations.map((donation) =>
-      donation.id === id ? { ...donation, [field]: props.value } : donation
-    );
-    setFieldValue('donations', newDonations);
-  };
+  const handleEditCellChangeCommitted = React.useCallback(
+    (params) => {
+      const { id, field, value } = params;
+      // Log the params to ensure they're correct
+      console.log('Edit params:', params);
+      
+      const newDonations = values.donations.map((donation) =>
+        donation.id === id ? { ...donation, [field]: value } : donation
+      );
+      setFieldValue('donations', newDonations);
+    },
+    [values.donations, setFieldValue]
+  );
 
   const columns = [
     { field: 'donationName', headerName: 'Donation Name', width: 200, editable: true },
@@ -73,7 +80,8 @@ const DonationsFieldArray = () => {
           rows={values.donations}
           columns={columns}
           pageSize={5}
-          onCellEditCommit={handleEditCellChangeCommitted}
+          //onCellEditCommit={handleEditCellChangeCommitted}
+          onCellEditStart={handleEditCellChangeCommitted}
         />
       </div>
     </>
@@ -88,7 +96,9 @@ function App() {
     <MultiStepForm
       initialValues={initialValues}
       onSubmit={(values) => {
+        console.log('Submitting values:', values); 
         alert(JSON.stringify(values, null, 2));
+        
       }}
     >
       <FormStep

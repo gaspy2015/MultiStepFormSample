@@ -34,7 +34,7 @@ const MultiStepForm = ({ children, initialValues, onSubmit }) => {
   
     if (isLastStep) {
       // Include the donations data in the form submission
-      const formData = { ...values, donations: values.donations };
+      const formData = { ...values, donations: snapshot.donations }; // Use snapshot for donations
       await onSubmit(formData, actions);
       setIsFormSubmitted(true);
     } else {
@@ -42,6 +42,7 @@ const MultiStepForm = ({ children, initialValues, onSubmit }) => {
       next(values);
     }
   };
+  
   
 
   return (
