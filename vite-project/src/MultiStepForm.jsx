@@ -88,4 +88,12 @@ const MultiStepForm = ({ children, initialValues, onSubmit }) => {
 
 export default MultiStepForm;
 
-export const FormStep = ({ stepName = "", children }) =>{ return <>{children}</>};
+export const FormStep = ({ stepName = "", children }) => {
+  return (
+    <div>
+      {React.Children.map(children, (child) => {
+        return React.cloneElement(child);
+      })}
+    </div>
+  );
+};
