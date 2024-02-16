@@ -21,7 +21,7 @@ const validationSchemas = {
   }),
 };
 
-// Define the initial values for your form fields
+
 const initialValues = {
   name: "",
   email: "",
@@ -35,7 +35,7 @@ const DonationsFieldArray = () => {
 
   const handleAddRow = () => {
     const newDonation = { 
-      id: values.donations.length + 1, // Using the length of the donations array as ID
+      id: values.donations.length, 
       donationName: "", 
       amount: 0 
     };
@@ -53,7 +53,6 @@ const DonationsFieldArray = () => {
   const handleEditCellChangeCommitted = React.useCallback(
     (params) => {
       const { id, field, value } = params;
-      // Log the params to ensure they're correct
       console.log("Edit params:", params);
   
       const newDonations = values.donations.map((donation, index) =>
@@ -62,7 +61,7 @@ const DonationsFieldArray = () => {
       setFieldValue("donations", newDonations);
       console.log(values);
     },
-    [values, setFieldValue], // Correct dependencies array
+    [values, setFieldValue], 
     
   );
   
